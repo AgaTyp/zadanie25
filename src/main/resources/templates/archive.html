@@ -20,17 +20,21 @@
                <th scope="col">Termin</th>
                <th scope="col">Categoria</th>
                <th scope="col">Gotowe</th>
+               <th scope="col">Czas wykonania</th>
+               <th scope="col">Data zakończenia</th>
                <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="task: ${tasks}" th:object="${task}">
-                <td th:text="*{title}"></td>
-                <td th:text="*{description}"></td>
-                <td th:text="*{dueDate}"></td>
-                <td th:text="*{category.name}"></td>
+                <td th:text="${task.getKey().title}"></td>
+                <td th:text="${task.getKey().description}"></td>
+                <td th:text="${task.getKey().dueDate}"></td>
+                <td th:text="${task.getKey().category.name}"></td>
                 <td><input class="form-check-inline" type="checkbox" checked disabled></td>
-                <td><a class="link-underline-info" th:href="|/edit?id=*{id}|">Edytuj</a></td>
+                <td th:text="${task.getValue()}"></td>
+                <td th:text="${task.getKey().showEndTime()}"></td>
+                <td><a class="link-underline-info" th:href="|/edit?id=${task.getKey().id}|">Edytuj</a></td>
             </tr>
 
             </tbody>

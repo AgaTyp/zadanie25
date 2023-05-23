@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 public class Task {
@@ -15,13 +17,33 @@ public class Task {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dueDate;
     private boolean done = false;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "duration_id", referencedColumnName = "id")
-    private TaskDuration taskDuration;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endTime;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "duration_id", referencedColumnName = "id")
+//    private TaskDuration taskDuration;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    public String showEndTime() {
+        DateTimeFormatter datePattern = DateTimeFormatter.ofPattern("dd-MM-yyyy  HH:mm:ss");
+        if (endTime != null) {
+            return datePattern.format(endTime);
+        }
+        return "-";
+    }
+
+    public String showStartTime() {
+        DateTimeFormatter datePattern = DateTimeFormatter.ofPattern("dd-MM-yyyy  HH:mm:ss");
+        if (startTime != null) {
+            return datePattern.format(startTime);
+        }
+        return "-";
+    }
 
     public long getId() {
         return id;
@@ -63,12 +85,20 @@ public class Task {
         this.done = done;
     }
 
-    public TaskDuration getTaskDuration() {
-        return taskDuration;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setTaskDuration(TaskDuration taskDuration) {
-        this.taskDuration = taskDuration;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public Category getCategory() {

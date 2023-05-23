@@ -8,19 +8,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class TaskController {
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
-    @Autowired
-    private TaskDurationRepository taskDurationRepository;
+    private final CategoryRepository categoryRepository;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    public TaskController(TaskRepository taskRepository, CategoryRepository categoryRepository) {
+        this.taskRepository = taskRepository;
+        this.categoryRepository = categoryRepository;
+    }
 
     @GetMapping("/")
     public String home(Model model) {
@@ -37,7 +42,20 @@ public class TaskController {
     @GetMapping("/archive")
     public String archive(Model model) {
         List<Task> tasks = taskRepository.findByDoneIsTrueOrderByDueDateDesc();
-        model.addAttribute("tasks", tasks);
+        Map<Task, String> taskDurations = new LinkedHashMap<>();
+        tasks.forEach(task -> {
+            String durationFormatted = "-";
+            if (task.getStartTime() != null) {
+                Duration duration = Duration.between(task.getStartTime(), task.getEndTime());
+                durationFormatted = String.format("%02d:%02d:%02d",
+                        duration.toHoursPart(),
+                        duration.toMinutesPart(),
+                        duration.toSecondsPart()
+                );
+            }
+            taskDurations.put(task, durationFormatted);
+        });
+        model.addAttribute("tasks", taskDurations);
 
         return "archive";
     }
@@ -60,6 +78,9 @@ public class TaskController {
         task.setCategory(task.getCategory());
         task.setDueDate(task.getDueDate());
         task.setDone(task.isDone());
+        task.setStartTime(task.getStartTime());
+        task.setEndTime(task.getEndTime());
+//        task.setDone(task.isDone());
         taskRepository.save(task);
 
         return "redirect:/";
@@ -74,15 +95,7 @@ public class TaskController {
 
     @PostMapping("/addCategory")
     public String addTask(Category category) {
-        boolean categoryFound = false;
-        List<Category> categories = categoryRepository.findAll();
-        for (Category cat : categories) {
-            if (cat.getName().equals(category.getName())) {
-                categoryFound = true;
-                break;
-            }
-        }
-        if (!categoryFound) {
+        if (categoryRepository.findByName(category.getName()) == null) {
             categoryRepository.save(category);
         }
         return "redirect:/";
@@ -92,10 +105,32 @@ public class TaskController {
     public String taskDone(Task task) {
         Task taskDone = taskRepository.findById(task.getId()).orElse(null);
         if (taskDone != null) {
+            taskDone.setEndTime(LocalDateTime.now());
             taskDone.setDone(true);
             taskRepository.save(taskDone);
         }
+        return "redirect:/archive";
+    }
+
+    @PostMapping("/startTask")
+    public String startTask(Task task) {
+        Task taskToStart = taskRepository.findById(task.getId()).orElse(null);
+        if (taskToStart != null && taskToStart.getStartTime() == null) {
+            taskToStart.setStartTime(LocalDateTime.now());
+            taskRepository.save(taskToStart);
+        }
         return "redirect:/";
+    }
+
+    @PostMapping("/completeTask")
+    public String completeTask(Task task) {
+        Task taskToComplete = taskRepository.findById(task.getId()).orElse(null);
+        if (taskToComplete != null) {
+            taskToComplete.setEndTime(LocalDateTime.now());
+            taskToComplete.setDone(true);
+            taskRepository.save(taskToComplete);
+        }
+        return "redirect:/archive";
     }
 
 }

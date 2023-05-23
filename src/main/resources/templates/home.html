@@ -57,6 +57,8 @@
             <th scope="col">Opis</th>
             <th scope="col">Termin</th>
             <th scope="col">Kategoria</th>
+            <th scope="col">Zakończ bez logowania czasu</th>
+            <th scope="col">Loguj czas</th>
             <th scope="col"></th>
             <th scope="col"></th>
         </tr>
@@ -65,12 +67,23 @@
         <tr th:each="task: ${tasks}" th:object="${task}">
             <td th:text="*{title}"></td>
             <td th:text="*{description}"></td>
-            <td id="dueDate" th:text="*{dueDate}"></td>
+            <td class="dueDateTask" th:text="*{dueDate}"></td>
             <td th:text="*{category.name}"></td>
             <td><form action="/done" method="post">
                 <input type="hidden" name="id" th:value="${task.id}">
                 <input type="hidden" name="done" th:value="${task.done}">
-                <input class="btn btn-outline-secondary" type="submit" value="Zrobione"></form></td>
+                <input name="taskDoneButton" class="btn btn-outline-secondary" type="submit" value="Zrobione"></form></td>
+            <td><form action="/startTask" method="post">
+                <input type="hidden" name="id" th:value="${task.id}">
+                <input class="taskStartTime" type="hidden" name="startTime" th:value="${task.startTime}">
+                <input type="hidden" name="endTime" th:value="${task.endTime}">
+                <input name="taskStartButton" class="btn btn-outline-info" type="submit" value="Zaczynam"></form></td>
+            <td><form action="/done" method="post">
+                <input type="hidden" name="id" th:value="${task.id}">
+                <input type="hidden" name="startTime" th:value="${task.startTime}">
+                <input class="taskEndTime" type="hidden" name="endTime" th:value="${task.endTime}">
+                <input type="hidden" name="done" th:value="${task.done}">
+                <input name="taskEndButton" class="btn btn-outline-success" type="submit" value="Zakończ" disabled></form></td>
             <td><a class="link-underline-info"  th:href="|/edit?id=*{id}|">Edytuj</a></td>
         </tr>
 
@@ -81,6 +94,6 @@
     <p><a class="link-underline-secondary" href="/archive">Archiwum</a></p>
     </div>
 </div>
-<script src="../static/script.js"></script>
+<script src="/script.js"></script>
 </body>
 </html>
